@@ -9,7 +9,7 @@ import { InfoModal } from './components/modals/InfoModal'
 import { WinModal } from './components/modals/WinModal'
 import { StatsModal } from './components/modals/StatsModal'
 import { isWordInWordList, isWinningWord, solution } from './lib/words'
-import { addEvent } from './lib/stats'
+import { addEvent, loadStats } from './lib/stats'
 import {
   loadGameStateFromLocalStorage,
   saveGameStateToLocalStorage,
@@ -37,6 +37,11 @@ function App() {
     return loaded.guesses
   })
 
+  const [stats, setStats] = useState<number[]>(() => {
+    const  loaded = loadStats()
+    return loaded
+  })
+  
   useEffect(() => {
     saveGameStateToLocalStorage({ guesses, solution })
   }, [guesses])
@@ -79,12 +84,12 @@ function App() {
       setCurrentGuess('')
 
       if (winningWord) {
-        addEvent(guesses.length)
+        setStats(addEvent(stats, guesses.length))
         return setIsGameWon(true)
       }
 
       if (guesses.length === 5) {
-        addEvent(guesses.length + 1)
+        setStats(addEvent(stats, guesses.length + 1))
         setIsGameLost(true)
         return setTimeout(() => {
           setIsGameLost(false)
@@ -143,6 +148,7 @@ function App() {
       <StatsModal
         isOpen={isStatsModalOpen}
         handleClose={() => setIsStatsModalOpen(false)}
+        stats={stats}
       />
       <AboutModal
         isOpen={isAboutModalOpen}
