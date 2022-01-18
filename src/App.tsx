@@ -1,4 +1,5 @@
 import { InformationCircleIcon } from '@heroicons/react/outline'
+import { ChartBarIcon } from '@heroicons/react/outline'
 import { useState, useEffect } from 'react'
 import { Alert } from './components/alerts/Alert'
 import { Grid } from './components/grid/Grid'
@@ -8,11 +9,10 @@ import { InfoModal } from './components/modals/InfoModal'
 import { WinModal } from './components/modals/WinModal'
 import { StatsModal } from './components/modals/StatsModal'
 import { isWordInWordList, isWinningWord, solution } from './lib/words'
+import { addEvent } from './lib/stats'
 import {
   loadGameStateFromLocalStorage,
   saveGameStateToLocalStorage,
-  loadStatsFromLocalStorage,
-  saveStatsToLocalStorage
 } from './lib/localStorage'
 
 function App() {
@@ -22,6 +22,7 @@ function App() {
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false)
   const [isAboutModalOpen, setIsAboutModalOpen] = useState(false)
   const [isNotEnoughLetters, setIsNotEnoughLetters] = useState(false)
+  const [isStatsModalOpen, setIsStatsModalOpen] = useState(false)
   const [isWordNotFoundAlertOpen, setIsWordNotFoundAlertOpen] = useState(false)
   const [isGameLost, setIsGameLost] = useState(false)
   const [shareComplete, setShareComplete] = useState(false)
@@ -40,13 +41,6 @@ function App() {
     saveGameStateToLocalStorage({ guesses, solution })
   }, [guesses])
 
-  const maxStreak     = 7
-  const currentStreak = 8
-  const [stats, setStats ] = useState<number[]>(() => {
-    const loaded = loadStatsFromLocalStorage()
-    return loaded
-  })
-  
   useEffect(() => {
     if (isGameWon) {
       setIsWinModalOpen(true)
@@ -70,7 +64,7 @@ function App() {
         setIsNotEnoughLetters(false)
       }, 2000)
     }
-  
+
     if (!isWordInWordList(currentGuess)) {
       setIsWordNotFoundAlertOpen(true)
       return setTimeout(() => {
@@ -85,18 +79,12 @@ function App() {
       setCurrentGuess('')
 
       if (winningWord) {
-        stats[currentStreak]++
-        stats[guesses.length + 1]++
-        if( stats[currentStreak] > stats[maxStreak] ){
-          stats[maxStreak] = stats[currentStreak] }
-        saveStatsToLocalStorage({ stats })
+        addEvent(guesses.length)
         return setIsGameWon(true)
       }
 
       if (guesses.length === 5) {
-        stats[currentStreak] = 0
-        stats[guesses.length + 1]++
-        saveStatsToLocalStorage({ stats })
+        addEvent(guesses.length + 1)
         setIsGameLost(true)
         return setTimeout(() => {
           setIsGameLost(false)
@@ -124,6 +112,10 @@ function App() {
           className="h-6 w-6 cursor-pointer"
           onClick={() => setIsInfoModalOpen(true)}
         />
+        <ChartBarIcon
+          className="h-6 w-6 cursor-pointer"
+          onClick={() => setIsStatsModalOpen(true)}
+        />
       </div>
       <Grid guesses={guesses} currentGuess={currentGuess} />
       <Keyboard
@@ -147,6 +139,10 @@ function App() {
       <InfoModal
         isOpen={isInfoModalOpen}
         handleClose={() => setIsInfoModalOpen(false)}
+      />
+      <StatsModal
+        isOpen={isStatsModalOpen}
+        handleClose={() => setIsStatsModalOpen(false)}
       />
       <AboutModal
         isOpen={isAboutModalOpen}
