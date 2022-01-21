@@ -12,12 +12,14 @@ export const isWinningWord = (word: string) => {
   return solution === word
 }
 
-export const getWordOfDay = () => {
+let PERIOD_MINUTE = 10
+
+export const getWordOfPeriod = () => {
   // January 1, 2022 Game Epoch
   const epochMs = 1641013200000
   const now = Date.now()
-  const msInDay = 86400000
-  const index = Math.floor((now - epochMs) / msInDay)
+  const periodMs = PERIOD_MINUTE * 60 * 1_000
+  const index = Math.floor((now - epochMs) / periodMs) % WORDS.length
 
   return {
     solution: WORDS[index].toUpperCase(),
@@ -25,4 +27,4 @@ export const getWordOfDay = () => {
   }
 }
 
-export const { solution, solutionIndex } = getWordOfDay()
+export const { solution, solutionIndex } = getWordOfPeriod()
