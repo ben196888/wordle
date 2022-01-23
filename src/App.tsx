@@ -1,6 +1,6 @@
 import { InformationCircleIcon } from '@heroicons/react/outline'
 import { ChartBarIcon } from '@heroicons/react/outline'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Alert } from './components/alerts/Alert'
 import { Grid } from './components/grid/Grid'
 import { Keyboard } from './components/keyboard/Keyboard'
@@ -25,7 +25,7 @@ function App() {
   const [isStatsModalOpen, setIsStatsModalOpen] = useState(false)
   const [isWordNotFoundAlertOpen, setIsWordNotFoundAlertOpen] = useState(false)
   const [isGameLost, setIsGameLost] = useState(false)
-  const [shareComplete, setShareComplete] = useState(false)
+  const [showCopyToClipboardComplete, setShowCopyToClipboardComplete] = useState(false)
   const [guesses, setGuesses] = useState<string[]>(() => {
     const loaded = loadGameStateFromLocalStorage()
     if (loaded?.solution !== solution) {
@@ -95,6 +95,18 @@ function App() {
     }
   }
 
+  const winModalOnShare = useCallback((isShareToClipboard: boolean) => {
+    if (isShareToClipboard) {
+      setShowCopyToClipboardComplete(true)
+      return setTimeout(() => {
+        setShowCopyToClipboardComplete(false)
+      }, 2000)
+    }
+  }, [setShowCopyToClipboardComplete])
+  const winModalOffShare = useCallback(() => {
+    setIsWinModalOpen(false)
+  }, [setIsWinModalOpen])
+
   return (
     <div className="py-8 max-w-7xl mx-auto sm:px-6 lg:px-8">
       <Alert message="Not enough letters" isOpen={isNotEnoughLetters} />
@@ -105,7 +117,7 @@ function App() {
       />
       <Alert
         message="Game copied to clipboard"
-        isOpen={shareComplete}
+        isOpen={showCopyToClipboardComplete}
         variant="success"
       />
       <div className="flex w-80 mx-auto items-center mb-8">
@@ -130,13 +142,8 @@ function App() {
         isOpen={isWinModalOpen}
         handleClose={() => setIsWinModalOpen(false)}
         guesses={guesses}
-        handleShare={() => {
-          setIsWinModalOpen(false)
-          setShareComplete(true)
-          return setTimeout(() => {
-            setShareComplete(false)
-          }, 2000)
-        }}
+        onShare={winModalOnShare}
+        offShare={winModalOffShare}
       />
       <InfoModal
         isOpen={isInfoModalOpen}

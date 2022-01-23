@@ -1,4 +1,4 @@
-import { Fragment } from 'react'
+import { Fragment, useCallback } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
 import { CheckIcon } from '@heroicons/react/outline'
 import { MiniGrid } from '../mini-grid/MiniGrid'
@@ -9,15 +9,20 @@ type Props = {
   isOpen: boolean
   handleClose: () => void
   guesses: string[]
-  handleShare: () => void
+  onShare: (isShareToClipboard: boolean) => void
+  offShare: () => void
 }
 
 export const WinModal = ({
   isOpen,
   handleClose,
   guesses,
-  handleShare,
+  onShare,
+  offShare,
 }: Props) => {
+  const onBtnClick = useCallback(() => {
+    shareStatus(guesses).then(onShare).finally(offShare)
+  }, [guesses, onShare, offShare])
   return (
     <Transition.Root show={isOpen} as={Fragment}>
       <Dialog
@@ -37,7 +42,7 @@ export const WinModal = ({
           >
             <Dialog.Overlay className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
           </Transition.Child>
-          
+
           {/* This element is to trick the browser into centering the modal contents. */}
           <span
             className="hidden sm:inline-block sm:align-middle sm:h-screen"
@@ -85,10 +90,7 @@ export const WinModal = ({
                 <button
                   type="button"
                   className="inline-flex justify-center w-full rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm"
-                  onClick={() => {
-                    shareStatus(guesses)
-                    handleShare()
-                  }}
+                  onClick={onBtnClick}
                 >
                   Share
                 </button>

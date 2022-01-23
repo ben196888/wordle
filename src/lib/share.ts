@@ -1,10 +1,12 @@
 import { getGuessStatuses } from './statuses'
 import { solutionIndex } from './words'
 
-export const shareStatus = (guesses: string[]) => {
-  navigator.clipboard.writeText(
-    `Not Wordle ${solutionIndex} ${guesses.length}/6\n\n${generateEmojiGrid(guesses)}`
-  )
+export const shareStatus = async (guesses: string[]): Promise<boolean> => {
+  const text = `Not Wordle ${solutionIndex} ${guesses.length}/6\n\n${generateEmojiGrid(guesses)}`;
+  if (navigator.share) {
+    return navigator.share({ text: text }).then(() => false)
+  }
+  return navigator.clipboard.writeText(text).then(() => true)
 }
 
 export const generateEmojiGrid = (guesses: string[]) => {
