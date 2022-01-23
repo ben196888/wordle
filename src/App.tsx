@@ -74,6 +74,9 @@ function App() {
       }, 2000)
     }
 
+    if (guesses.length === 0) {
+      gtag('event', 'first_guess', { word: currentGuess })
+    }
     const winningWord = isWinningWord(currentGuess)
 
     if (currentGuess.length === 5 && guesses.length < 6 && !isGameWon) {

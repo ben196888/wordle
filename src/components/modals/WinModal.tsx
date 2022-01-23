@@ -21,6 +21,7 @@ export const WinModal = ({
   offShare,
 }: Props) => {
   const onBtnClick = useCallback(() => {
+    gtag('event', 'share')
     shareStatus(guesses).then(onShare).finally(offShare)
   }, [guesses, onShare, offShare])
   return (
