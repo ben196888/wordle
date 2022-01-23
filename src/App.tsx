@@ -49,17 +49,46 @@ function App() {
     }
   }, [isGameWon])
 
-  const onChar = (value: string) => {
-    if (currentGuess.length < 5 && guesses.length < 6) {
-      setCurrentGuess(`${currentGuess}${value}`)
+  const onNewGuess = useCallback((newGuess: string, callback: () => any) => {
+    if (guesses.length === 0) {
+      gtag('event', 'first_guess', { word: newGuess })
     }
-  }
+    const winningWord = isWinningWord(newGuess)
 
-  const onDelete = () => {
-    setCurrentGuess(currentGuess.slice(0, -1))
-  }
+    if (newGuess.length === 5 && guesses.length < 6 && !isGameWon) {
+      setGuesses(g => [...g, newGuess])
+      callback()
 
-  const onEnter = () => {
+      if (winningWord) {
+        setStats(s => addStatsForCompletedGame(s, guesses.length))
+        return setIsGameWon(true)
+      }
+
+      if (guesses.length === 5) {
+        setStats(s => addStatsForCompletedGame(s, guesses.length + 1))
+        setIsGameLost(true)
+        return setTimeout(() => {
+          setIsGameLost(false)
+        }, 2000)
+      }
+    }
+  }, [guesses.length, isGameWon, setIsGameWon, setGuesses, setStats, setIsGameLost])
+
+  const onChar = useCallback((value: string) => {
+    if (currentGuess.length < 5 && guesses.length < 6) {
+      setCurrentGuess(currGuess => `${currGuess}${value}`)
+    }
+  }, [currentGuess.length, guesses.length, setCurrentGuess])
+
+  const onDelete = useCallback(() => {
+    setCurrentGuess(currGuess => currGuess.slice(0, -1))
+  }, [setCurrentGuess])
+
+  const onReset = useCallback(() => {
+    setCurrentGuess('')
+  }, [setCurrentGuess])
+
+  const onEnter = useCallback(() => {
     if (!(currentGuess.length === 5)) {
       setIsNotEnoughLetters(true)
       return setTimeout(() => {
@@ -74,29 +103,8 @@ function App() {
       }, 2000)
     }
 
-    if (guesses.length === 0) {
-      gtag('event', 'first_guess', { word: currentGuess })
-    }
-    const winningWord = isWinningWord(currentGuess)
-
-    if (currentGuess.length === 5 && guesses.length < 6 && !isGameWon) {
-      setGuesses([...guesses, currentGuess])
-      setCurrentGuess('')
-
-      if (winningWord) {
-        setStats(addStatsForCompletedGame(stats, guesses.length))
-        return setIsGameWon(true)
-      }
-
-      if (guesses.length === 5) {
-        setStats(addStatsForCompletedGame(stats, guesses.length + 1))
-        setIsGameLost(true)
-        return setTimeout(() => {
-          setIsGameLost(false)
-        }, 2000)
-      }
-    }
-  }
+    onNewGuess(currentGuess, onReset)
+  }, [currentGuess, setIsNotEnoughLetters, setIsWordNotFoundAlertOpen, onNewGuess, onReset])
 
   const winModalOnShare = useCallback((isShareToClipboard: boolean) => {
     if (isShareToClipboard) {
