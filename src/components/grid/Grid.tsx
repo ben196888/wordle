@@ -12,7 +12,7 @@ export const Grid = ({ guesses, currentGuess }: Props) => {
     guesses.length < 5 ? Array.from(Array(5 - guesses.length)) : []
 
   return (
-    <div className="pb-6">
+    <div className="pt-2 pb-2">
       {guesses.map((guess, i) => (
         <CompletedRow key={i} guess={guess} />
       ))}

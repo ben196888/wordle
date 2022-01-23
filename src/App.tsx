@@ -108,7 +108,7 @@ function App() {
   }, [setIsWinModalOpen])
 
   return (
-    <div className="py-8 max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div className="py-4 max-w-7xl mx-auto sm:px-6 lg:px-8">
       <Alert message="Not enough letters" isOpen={isNotEnoughLetters} />
       <Alert message="Word not found" isOpen={isWordNotFoundAlertOpen} />
       <Alert
@@ -120,7 +120,7 @@ function App() {
         isOpen={showCopyToClipboardComplete}
         variant="success"
       />
-      <div className="flex w-80 mx-auto items-center mb-8">
+      <div className="flex w-80 mx-auto items-center">
         <h1 className="text-xl grow font-bold">Not Wordle</h1>
         <InformationCircleIcon
           className="h-6 w-6 cursor-pointer"
@@ -161,7 +161,7 @@ function App() {
 
       <button
         type="button"
-        className="mx-auto mt-8 flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        className="mx-auto mt-4 flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
         onClick={() => setIsAboutModalOpen(true)}
       >
         About this game

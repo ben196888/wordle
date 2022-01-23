@@ -43,7 +43,7 @@ export const Keyboard = ({ onChar, onDelete, onEnter, guesses }: Props) => {
   }, [onEnter, onDelete, onChar])
 
   return (
-    <div>
+    <div className="py-1">
       <div className="flex justify-center mb-1">
         <Key value="Q" onClick={onClick} status={charStatuses['Q']} />
         <Key value="W" onClick={onClick} status={charStatuses['W']} />
