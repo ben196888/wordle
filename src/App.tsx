@@ -1,6 +1,6 @@
 import { InformationCircleIcon } from '@heroicons/react/outline'
 import { ChartBarIcon } from '@heroicons/react/outline'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Alert } from './components/alerts/Alert'
 import { Grid } from './components/grid/Grid'
 import { Keyboard } from './components/keyboard/Keyboard'
@@ -18,14 +18,14 @@ import {
 function App() {
   const [currentGuess, setCurrentGuess] = useState('')
   const [isGameWon, setIsGameWon] = useState(false)
-  const [isWinModalOpen, setIsWinModalOpen] = useState(false)
+  const [isWinningModalOpen, setIsWinningModalOpen] = useState(false)
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false)
   const [isAboutModalOpen, setIsAboutModalOpen] = useState(false)
   const [isNotEnoughLetters, setIsNotEnoughLetters] = useState(false)
   const [isStatsModalOpen, setIsStatsModalOpen] = useState(false)
   const [isWordNotFoundAlertOpen, setIsWordNotFoundAlertOpen] = useState(false)
   const [isGameLost, setIsGameLost] = useState(false)
-  const [shareComplete, setShareComplete] = useState(false)
+  const [showCopyToClipboardComplete, setShowCopyToClipboardComplete] = useState(false)
   const [guesses, setGuesses] = useState<string[]>(() => {
     const loaded = loadGameStateFromLocalStorage()
     if (loaded?.solution !== solution) {
@@ -49,7 +49,7 @@ function App() {
 
   useEffect(() => {
     if (isGameWon) {
-      setIsWinModalOpen(true)
+      setIsWinningModalOpen(true)
     }
   }, [isGameWon])
 
@@ -96,6 +96,19 @@ function App() {
     }
   }
 
+  const winModalOnShare = useCallback((isShareToClipboard: boolean) => {
+    if (isShareToClipboard) {
+      setShowCopyToClipboardComplete(true)
+      return setTimeout(() => {
+        setShowCopyToClipboardComplete(false)
+      }, 2000)
+    }
+  }, [])
+
+  const winModalOffShare = useCallback(() => {
+    setIsWinningModalOpen(false)
+  }, [])
+
   return (
     <div className="py-8 max-w-7xl mx-auto sm:px-6 lg:px-8">
       <div className="flex w-80 mx-auto items-center mb-8">
@@ -117,16 +130,11 @@ function App() {
         guesses={guesses}
       />
       <WinModal
-        isOpen={isWinModalOpen}
-        handleClose={() => setIsWinModalOpen(false)}
+        isOpen={isWinningModalOpen}
+        handleClose={() => setIsWinningModalOpen(false)}
         guesses={guesses}
-        handleShare={() => {
-          setIsWinModalOpen(false)
-          setShareComplete(true)
-          return setTimeout(() => {
-            setShareComplete(false)
-          }, 2000)
-        }}
+        onShare={winModalOnShare}
+        offShare={winModalOffShare}
       />
       <InfoModal
         isOpen={isInfoModalOpen}
@@ -158,7 +166,7 @@ function App() {
       />
       <Alert
         message="Game copied to clipboard"
-        isOpen={shareComplete}
+        isOpen={showCopyToClipboardComplete}
         variant="success"
       />
     </div>
