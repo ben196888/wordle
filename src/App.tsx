@@ -54,35 +54,26 @@ function App() {
     const isLosingGame = guesses.length === 6 && !isWinningGame
     if (isWinningGame) {
       setIsGameWon(true)
+      setStats(s => addStatsForCompletedGame(s, guesses.length, true))
     }
     if (isLosingGame) {
       setIsGameLost(true)
+      setStats(s => addStatsForCompletedGame(s, guesses.length, false))
       setTimeout(() => {
         setIsGameLost(false)
       }, 2000)
     }
   }, [guesses])
 
-  const onNewGuess = useCallback((newGuess: string, callback: () => any) => {
+  const onNewGuess = useCallback((newGuess: string) => {
     if (guesses.length === 0) {
       gtag('event', 'first_guess', { word: newGuess })
     }
-    const winningWord = isWinningWord(newGuess)
-
     if (newGuess.length === 5 && guesses.length < 6 && !isGameWon) {
       setGuesses(g => [...g, newGuess])
-      callback()
-
-      if (winningWord) {
-        setStats(s => addStatsForCompletedGame(s, guesses.length))
-        return
-      }
-
-      if (guesses.length === 5) {
-        setStats(s => addStatsForCompletedGame(s, guesses.length + 1))
-      }
+      setCurrentGuess('')
     }
-  }, [guesses.length, isGameWon, setGuesses, setStats])
+  }, [guesses.length, isGameWon, setGuesses, setCurrentGuess])
 
   const onChar = useCallback((value: string) => {
     if (currentGuess.length < 5 && guesses.length < 6) {
@@ -92,10 +83,6 @@ function App() {
 
   const onDelete = useCallback(() => {
     setCurrentGuess(currGuess => currGuess.slice(0, -1))
-  }, [setCurrentGuess])
-
-  const onReset = useCallback(() => {
-    setCurrentGuess('')
   }, [setCurrentGuess])
 
   const onEnter = useCallback(() => {
@@ -113,8 +100,8 @@ function App() {
       }, 2000)
     }
 
-    onNewGuess(currentGuess, onReset)
-  }, [currentGuess, setIsNotEnoughLetters, setIsWordNotFoundAlertOpen, onNewGuess, onReset])
+    onNewGuess(currentGuess)
+  }, [currentGuess, setIsNotEnoughLetters, setIsWordNotFoundAlertOpen, onNewGuess])
 
   const winModalOnShare = useCallback((isShareToClipboard: boolean) => {
     if (isShareToClipboard) {

@@ -8,24 +8,25 @@ import {
 
 export const addStatsForCompletedGame = (
   gameStats: GameStats,
-  count: number
+  count: number,
+  isWinningGame: boolean,
 ) => {
   // Count is number of incorrect guesses before end.
   const stats = { ...gameStats }
 
   stats.totalGames += 1
 
-  if (count > 5) {
-    // A fail situation
-    stats.currentStreak = 0
-    stats.gamesFailed += 1
-  } else {
-    stats.winDistribution[count] += 1
+  if (isWinningGame) {
+    // reindex from 1 to 6 to 0 to 5
+    stats.winDistribution[count - 1] += 1
     stats.currentStreak += 1
 
     if (stats.bestStreak < stats.currentStreak) {
       stats.bestStreak = stats.currentStreak
     }
+  } else {
+    stats.currentStreak = 0
+    stats.gamesFailed += 1
   }
 
   stats.successRate = getSuccessRate(stats)
