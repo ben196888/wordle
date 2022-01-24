@@ -41,15 +41,16 @@ function App() {
 
   const isWinningGame = guesses.length > 0 && isWinningWord(guesses[guesses.length - 1])
   const isLosingGame = guesses.length === 6 && !isWinningGame
+  const isInputDisabled = isWinningGame || isLosingGame
 
   useEffect(() => {
     if (isWinningGame) {
-      setIsWinningModalOpen(true)
       setStats(s => addStatsForCompletedGame(s, guesses.length, true))
+      setIsWinningModalOpen(true)
     }
     if (isLosingGame) {
-      setIsLosingModalOpen(true)
       setStats(s => addStatsForCompletedGame(s, guesses.length, false))
+      setIsLosingModalOpen(true)
       setTimeout(() => {
         setIsLosingModalOpen(false)
       }, 2000)
@@ -60,20 +61,20 @@ function App() {
     if (guesses.length === 0) {
       gtag('event', 'first_guess', { word: newGuess })
     }
-    if (guesses.length < 6 && !isWinningGame) {
+    if (!isInputDisabled) {
       setGuesses(g => [...g, newGuess])
     }
-  }, [guesses.length, isWinningGame, setGuesses])
+  }, [guesses.length, isInputDisabled])
 
   const onChar = useCallback((value: string) => {
-    if (currentGuess.length < 5 && guesses.length < 6) {
+    if (!isInputDisabled && currentGuess.length < 5) {
       setCurrentGuess(currGuess => `${currGuess}${value}`)
     }
-  }, [currentGuess.length, guesses.length, setCurrentGuess])
+  }, [currentGuess.length, isInputDisabled])
 
   const onDelete = useCallback(() => {
     setCurrentGuess(currGuess => currGuess.slice(0, -1))
-  }, [setCurrentGuess])
+  }, [])
 
   const onEnter = useCallback(() => {
     if (!(currentGuess.length === 5)) {
@@ -95,7 +96,7 @@ function App() {
       // reset current guess after append it to guesses
       setCurrentGuess('')
     }
-  }, [currentGuess, setIsNotEnoughLetters, setIsWordNotFoundAlertOpen, onNewGuess, setCurrentGuess])
+  }, [currentGuess, onNewGuess])
 
   const winModalOnShare = useCallback((isShareToClipboard: boolean) => {
     if (isShareToClipboard) {
@@ -104,10 +105,10 @@ function App() {
         setShowCopyToClipboardComplete(false)
       }, 2000)
     }
-  }, [setShowCopyToClipboardComplete])
+  }, [])
   const winModalOffShare = useCallback(() => {
     setIsWinningModalOpen(false)
-  }, [setIsWinningModalOpen])
+  }, [])
 
   return (
     <div className="py-4 max-w-7xl mx-auto sm:px-6 lg:px-8">
