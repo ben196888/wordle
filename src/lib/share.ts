@@ -22,7 +22,7 @@ export const generateEmojiGrid = (guesses: string[]) => {
           default:
             return '⬜'
         }
-      }).join('');
+      }).join('')
     })
     .join('\n')
 }

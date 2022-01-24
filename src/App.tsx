@@ -23,7 +23,7 @@ function App() {
   const [isNotEnoughLetters, setIsNotEnoughLetters] = useState(false)
   const [isStatsModalOpen, setIsStatsModalOpen] = useState(false)
   const [isWordNotFoundAlertOpen, setIsWordNotFoundAlertOpen] = useState(false)
-  const [isLosingModalOpen, setIsLosingModalOpen] = useState(false)
+  const [isLosingAlertOpen, setIsLosingAlertOpen] = useState(false)
   const [showCopyToClipboardComplete, setShowCopyToClipboardComplete] = useState(false)
   const [guesses, setGuesses] = useState<string[]>(() => {
     const loaded = loadGameStateFromLocalStorage()
@@ -45,14 +45,14 @@ function App() {
 
   useEffect(() => {
     if (isWinningGame) {
-      setStats(s => addStatsForCompletedGame(s, guesses.length, true))
+      setStats(s => addStatsForCompletedGame(s, guesses.length))
       setIsWinningModalOpen(true)
     }
     if (isLosingGame) {
-      setStats(s => addStatsForCompletedGame(s, guesses.length, false))
-      setIsLosingModalOpen(true)
+      setStats(s => addStatsForCompletedGame(s, -1))
+      setIsLosingAlertOpen(true)
       setTimeout(() => {
-        setIsLosingModalOpen(false)
+        setIsLosingAlertOpen(false)
       }, 2000)
     }
   }, [isWinningGame, isLosingGame, guesses.length])
@@ -103,6 +103,7 @@ function App() {
       }, 2000)
     }
   }, [])
+
   const winModalOffShare = useCallback(() => {
     setIsWinningModalOpen(false)
   }, [])
@@ -160,7 +161,7 @@ function App() {
       <Alert message="Word not found" isOpen={isWordNotFoundAlertOpen} />
       <Alert
         message={`You lost, the word was ${solution}`}
-        isOpen={isLosingModalOpen}
+        isOpen={isLosingAlertOpen}
       />
       <Alert
         message="Game copied to clipboard"
