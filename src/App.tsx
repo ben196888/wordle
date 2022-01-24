@@ -57,14 +57,11 @@ function App() {
     }
   }, [isWinningGame, isLosingGame, guesses.length])
 
-  const onNewGuess = useCallback((newGuess: string) => {
-    if (guesses.length === 0) {
-      gtag('event', 'first_guess', { word: newGuess })
+  useEffect(() => {
+    if (guesses.length === 1) {
+      gtag('event', 'first_guess', { word: guesses[0] })
     }
-    if (!isInputDisabled) {
-      setGuesses(g => [...g, newGuess])
-    }
-  }, [guesses.length, isInputDisabled])
+  }, [guesses])
 
   const onChar = useCallback((value: string) => {
     if (!isInputDisabled && currentGuess.length < 5) {
@@ -91,12 +88,12 @@ function App() {
       }, 2000)
     }
 
-    if (currentGuess.length === 5) {
-      onNewGuess(currentGuess)
+    if (!isInputDisabled && currentGuess.length === 5) {
+      setGuesses(g => [...g, currentGuess])
       // reset current guess after append it to guesses
       setCurrentGuess('')
     }
-  }, [currentGuess, onNewGuess])
+  }, [currentGuess, isInputDisabled])
 
   const winModalOnShare = useCallback((isShareToClipboard: boolean) => {
     if (isShareToClipboard) {
