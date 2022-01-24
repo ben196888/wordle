@@ -49,6 +49,20 @@ function App() {
     }
   }, [isGameWon])
 
+  useEffect(() => {
+    const isWinningGame = guesses.length > 0 && isWinningWord(guesses[guesses.length - 1])
+    const isLosingGame = guesses.length === 6 && !isWinningGame
+    if (isWinningGame) {
+      setIsGameWon(true)
+    }
+    if (isLosingGame) {
+      setIsGameLost(true)
+      setTimeout(() => {
+        setIsGameLost(false)
+      }, 2000)
+    }
+  }, [guesses])
+
   const onNewGuess = useCallback((newGuess: string, callback: () => any) => {
     if (guesses.length === 0) {
       gtag('event', 'first_guess', { word: newGuess })
@@ -61,18 +75,14 @@ function App() {
 
       if (winningWord) {
         setStats(s => addStatsForCompletedGame(s, guesses.length))
-        return setIsGameWon(true)
+        return
       }
 
       if (guesses.length === 5) {
         setStats(s => addStatsForCompletedGame(s, guesses.length + 1))
-        setIsGameLost(true)
-        return setTimeout(() => {
-          setIsGameLost(false)
-        }, 2000)
       }
     }
-  }, [guesses.length, isGameWon, setIsGameWon, setGuesses, setStats, setIsGameLost])
+  }, [guesses.length, isGameWon, setGuesses, setStats])
 
   const onChar = useCallback((value: string) => {
     if (currentGuess.length < 5 && guesses.length < 6) {
