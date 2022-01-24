@@ -17,22 +17,18 @@ import {
 
 function App() {
   const [currentGuess, setCurrentGuess] = useState('')
-  const [isGameWon, setIsGameWon] = useState(false)
-  const [isWinModalOpen, setIsWinModalOpen] = useState(false)
+  const [isWinningModalOpen, setIsWinningModalOpen] = useState(false)
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false)
   const [isAboutModalOpen, setIsAboutModalOpen] = useState(false)
   const [isNotEnoughLetters, setIsNotEnoughLetters] = useState(false)
   const [isStatsModalOpen, setIsStatsModalOpen] = useState(false)
   const [isWordNotFoundAlertOpen, setIsWordNotFoundAlertOpen] = useState(false)
-  const [isGameLost, setIsGameLost] = useState(false)
+  const [isLosingModalOpen, setIsLosingModalOpen] = useState(false)
   const [showCopyToClipboardComplete, setShowCopyToClipboardComplete] = useState(false)
   const [guesses, setGuesses] = useState<string[]>(() => {
     const loaded = loadGameStateFromLocalStorage()
     if (loaded?.solution !== solution) {
       return []
-    }
-    if (loaded.guesses.includes(solution)) {
-      setIsGameWon(true)
     }
     return loaded.guesses
   })
@@ -43,37 +39,31 @@ function App() {
     saveGameStateToLocalStorage({ guesses, solution })
   }, [guesses])
 
-  useEffect(() => {
-    if (isGameWon) {
-      setIsWinModalOpen(true)
-    }
-  }, [isGameWon])
+  const isWinningGame = guesses.length > 0 && isWinningWord(guesses[guesses.length - 1])
+  const isLosingGame = guesses.length === 6 && !isWinningGame
 
   useEffect(() => {
-    const isWinningGame = guesses.length > 0 && isWinningWord(guesses[guesses.length - 1])
-    const isLosingGame = guesses.length === 6 && !isWinningGame
     if (isWinningGame) {
-      setIsGameWon(true)
+      setIsWinningModalOpen(true)
       setStats(s => addStatsForCompletedGame(s, guesses.length, true))
     }
     if (isLosingGame) {
-      setIsGameLost(true)
+      setIsLosingModalOpen(true)
       setStats(s => addStatsForCompletedGame(s, guesses.length, false))
       setTimeout(() => {
-        setIsGameLost(false)
+        setIsLosingModalOpen(false)
       }, 2000)
     }
-  }, [guesses])
+  }, [isWinningGame, isLosingGame, guesses.length])
 
   const onNewGuess = useCallback((newGuess: string) => {
     if (guesses.length === 0) {
       gtag('event', 'first_guess', { word: newGuess })
     }
-    if (newGuess.length === 5 && guesses.length < 6 && !isGameWon) {
+    if (guesses.length < 6 && !isWinningGame) {
       setGuesses(g => [...g, newGuess])
-      setCurrentGuess('')
     }
-  }, [guesses.length, isGameWon, setGuesses, setCurrentGuess])
+  }, [guesses.length, isWinningGame, setGuesses])
 
   const onChar = useCallback((value: string) => {
     if (currentGuess.length < 5 && guesses.length < 6) {
@@ -100,8 +90,12 @@ function App() {
       }, 2000)
     }
 
-    onNewGuess(currentGuess)
-  }, [currentGuess, setIsNotEnoughLetters, setIsWordNotFoundAlertOpen, onNewGuess])
+    if (currentGuess.length === 5) {
+      onNewGuess(currentGuess)
+      // reset current guess after append it to guesses
+      setCurrentGuess('')
+    }
+  }, [currentGuess, setIsNotEnoughLetters, setIsWordNotFoundAlertOpen, onNewGuess, setCurrentGuess])
 
   const winModalOnShare = useCallback((isShareToClipboard: boolean) => {
     if (isShareToClipboard) {
@@ -112,8 +106,8 @@ function App() {
     }
   }, [setShowCopyToClipboardComplete])
   const winModalOffShare = useCallback(() => {
-    setIsWinModalOpen(false)
-  }, [setIsWinModalOpen])
+    setIsWinningModalOpen(false)
+  }, [setIsWinningModalOpen])
 
   return (
     <div className="py-4 max-w-7xl mx-auto sm:px-6 lg:px-8">
@@ -121,7 +115,7 @@ function App() {
       <Alert message="Word not found" isOpen={isWordNotFoundAlertOpen} />
       <Alert
         message={`You lost, the word was ${solution}`}
-        isOpen={isGameLost}
+        isOpen={isLosingModalOpen}
       />
       <Alert
         message="Game copied to clipboard"
@@ -147,8 +141,8 @@ function App() {
         guesses={guesses}
       />
       <WinModal
-        isOpen={isWinModalOpen}
-        handleClose={() => setIsWinModalOpen(false)}
+        isOpen={isWinningModalOpen}
+        handleClose={() => setIsWinningModalOpen(false)}
         guesses={guesses}
         onShare={winModalOnShare}
         offShare={winModalOffShare}
