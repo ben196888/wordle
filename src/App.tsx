@@ -17,26 +17,18 @@ import {
 
 function App() {
   const [currentGuess, setCurrentGuess] = useState('')
-  const [isGameWon, setIsGameWon] = useState(false)
   const [isWinningModalOpen, setIsWinningModalOpen] = useState(false)
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false)
   const [isAboutModalOpen, setIsAboutModalOpen] = useState(false)
   const [isNotEnoughLetters, setIsNotEnoughLetters] = useState(false)
   const [isStatsModalOpen, setIsStatsModalOpen] = useState(false)
   const [isWordNotFoundAlertOpen, setIsWordNotFoundAlertOpen] = useState(false)
-  const [isGameLost, setIsGameLost] = useState(false)
+  const [isLosingAlertOpen, setIsLosingAlertOpen] = useState(false)
   const [showCopyToClipboardComplete, setShowCopyToClipboardComplete] = useState(false)
   const [guesses, setGuesses] = useState<string[]>(() => {
     const loaded = loadGameStateFromLocalStorage()
     if (loaded?.solution !== solution) {
       return []
-    }
-    const gameWasWon = loaded.guesses.includes(solution)
-    if (gameWasWon) {
-      setIsGameWon(true)
-    }
-    if (loaded.guesses.length === 6 && !gameWasWon) {
-      setIsGameLost(true)
     }
     return loaded.guesses
   })
@@ -47,24 +39,36 @@ function App() {
     saveGameStateToLocalStorage({ guesses, solution })
   }, [guesses])
 
+  const isWinningGame = guesses.length > 0 && isWinningWord(guesses[guesses.length - 1])
+  const isLosingGame = guesses.length === 6 && !isWinningGame
+  const isInputDisabled = isWinningGame || isLosingGame
+
   useEffect(() => {
-    if (isGameWon) {
+    if (isWinningGame) {
+      setStats(s => addStatsForCompletedGame(s, guesses.length))
       setIsWinningModalOpen(true)
     }
-  }, [isGameWon])
-
-  const onChar = (value: string) => {
-    if (currentGuess.length < 5 && guesses.length < 6 && !isGameWon) {
-      setCurrentGuess(`${currentGuess}${value}`)
+    if (isLosingGame) {
+      setStats(s => addStatsForCompletedGame(s, -1))
+      setIsLosingAlertOpen(true)
+      setTimeout(() => {
+        setIsLosingAlertOpen(false)
+      }, 2000)
     }
-  }
+  }, [isWinningGame, isLosingGame, guesses.length])
 
-  const onDelete = () => {
-    setCurrentGuess(currentGuess.slice(0, -1))
-  }
+  const onChar = useCallback((value: string) => {
+    if (!isInputDisabled && currentGuess.length < 5) {
+      setCurrentGuess(currGuess => `${currGuess}${value}`)
+    }
+  }, [currentGuess.length, isInputDisabled])
 
-  const onEnter = () => {
-    if (!(currentGuess.length === 5) && !isGameLost) {
+  const onDelete = useCallback(() => {
+    setCurrentGuess(currGuess => currGuess.slice(0, -1))
+  }, [])
+
+  const onEnter = useCallback(() => {
+    if (!(currentGuess.length === 5)) {
       setIsNotEnoughLetters(true)
       return setTimeout(() => {
         setIsNotEnoughLetters(false)
@@ -78,23 +82,12 @@ function App() {
       }, 2000)
     }
 
-    const winningWord = isWinningWord(currentGuess)
-
-    if (currentGuess.length === 5 && guesses.length < 6 && !isGameWon) {
-      setGuesses([...guesses, currentGuess])
+    if (!isInputDisabled && currentGuess.length === 5) {
+      setGuesses(g => [...g, currentGuess])
+      // reset current guess after append it to guesses
       setCurrentGuess('')
-
-      if (winningWord) {
-        setStats(addStatsForCompletedGame(stats, guesses.length))
-        return setIsGameWon(true)
-      }
-
-      if (guesses.length === 5) {
-        setStats(addStatsForCompletedGame(stats, guesses.length + 1))
-        setIsGameLost(true)
-      }
     }
-  }
+  }, [currentGuess, isInputDisabled])
 
   const winModalOnShare = useCallback((isShareToClipboard: boolean) => {
     if (isShareToClipboard) {
@@ -162,7 +155,7 @@ function App() {
       <Alert message="Word not found" isOpen={isWordNotFoundAlertOpen} />
       <Alert
         message={`You lost, the word was ${solution}`}
-        isOpen={isGameLost}
+        isOpen={isLosingAlertOpen}
       />
       <Alert
         message="Game copied to clipboard"
