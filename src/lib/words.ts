@@ -12,7 +12,7 @@ export const isWinningWord = (word: string) => {
   return solution === word
 }
 
-let PERIOD_MINUTE = 10
+let PERIOD_MINUTE = 5
 
 export const getWordOfPeriod = () => {
   // January 1, 2022 Game Epoch
